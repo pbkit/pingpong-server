@@ -1,0 +1,5 @@
+deps:
+  - pbkit/interface-pingpong-server@main
+root:
+  lock:
+    pbkit/interface-pingpong-server@main: 19f101e8ec0587968e6dc7182b5a830d48d98a01
