@@ -30,9 +30,14 @@ func main() {
 	grpcServer := grpc.NewServer()
 	interface_pingpong_server.RegisterPingPongServiceServer(grpcServer, &PingPongServer{})
 
-	wrappedServer := grpcweb.WrapServer(grpcServer)
+	wrappedServer := grpcweb.WrapServer(grpcServer,
+		grpcweb.WithOriginFunc(func(origin string) bool {
+			return true
+		}),
+	)
+
 	handler := func(resp http.ResponseWriter, req *http.Request) {
-		if wrappedServer.IsGrpcWebRequest(req) {
+		if wrappedServer.IsGrpcWebRequest(req) || wrappedServer.IsAcceptableGrpcCorsRequest(req) {
 			wrappedServer.ServeHTTP(resp, req)
 			return
 		}
