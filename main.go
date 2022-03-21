@@ -9,6 +9,8 @@ import (
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -19,6 +21,10 @@ type PingPongServer struct {
 	interface_pingpong_server.UnimplementedPingPongServiceServer
 }
 
+type ThrowServiceServer struct {
+	interface_pingpong_server.UnimplementedThrowServiceServer
+}
+
 func (s *PingPongServer) PingPong(ctx context.Context, in *interface_pingpong_server.Ping) (*interface_pingpong_server.Pong, error) {
 	log.Printf("Received: %s", in.GetHello())
 	return &interface_pingpong_server.Pong{
@@ -26,9 +32,15 @@ func (s *PingPongServer) PingPong(ctx context.Context, in *interface_pingpong_se
 	}, nil
 }
 
+func (s *ThrowServiceServer) Throw(ctx context.Context, in *interface_pingpong_server.ThrowRequest) (*interface_pingpong_server.ThrowResponse, error) {
+	log.Printf("Received: %s", in.GetCode().Enum())
+	return nil, status.Errorf(codes.Code(in.GetCode().Number()), "%s", in.GetCode().Enum())
+}
+
 func main() {
 	grpcServer := grpc.NewServer()
 	interface_pingpong_server.RegisterPingPongServiceServer(grpcServer, &PingPongServer{})
+	interface_pingpong_server.RegisterThrowServiceServer(grpcServer, &ThrowServiceServer{})
 
 	wrappedServer := grpcweb.WrapServer(grpcServer,
 		grpcweb.WithOriginFunc(func(origin string) bool {
